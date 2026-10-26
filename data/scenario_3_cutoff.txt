@@ -1,0 +1,38 @@
+# Scenario 3: location 6 is cut off at the start; it becomes reachable at time 15
+SCENARIO cutoff_location
+PARAM max_steps 50
+PARAM speed 1
+PARAM battery_per_cost_unit 1
+PARAM battery_per_work_step 2
+PARAM recharge_per_step 5
+
+LOCATIONS 6
+1 Command_Center COMMAND
+2 Junction_1 JUNCTION
+3 Hospital_1 HOSPITAL
+4 Supply_Depot_1 DEPOT
+5 Charging_Station_1 CHARGING
+6 Building_Cut BUILDING
+
+CONNECTIONS 7
+1 1 2 3 OPEN
+2 2 3 4 OPEN
+3 2 4 2 OPEN
+4 4 5 3 OPEN
+5 5 6 2 BLOCKED
+6 2 6 4 BLOCKED
+7 3 4 1 OPEN
+
+ROBOTS 2
+1 3 MEDICAL 100 100
+2 4 GENERAL 90 90
+
+REQUESTS 3
+1 2 6 MEDICAL 4 3
+2 5 2 SUPPLY 2 2
+3 20 6 MEDICAL 4 3
+
+EVENTS 1
+15 UNBLOCK 6
+
+END

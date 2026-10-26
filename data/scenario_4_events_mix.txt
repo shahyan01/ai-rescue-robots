@@ -1,0 +1,60 @@
+# Scenario 4: charging station outage, robot offline/online, urgency change, low battery
+SCENARIO events_mix
+PARAM max_steps 80
+PARAM speed 1
+PARAM battery_per_cost_unit 1
+PARAM battery_per_work_step 2
+PARAM recharge_per_step 5
+
+LOCATIONS 9
+1 Command_Center COMMAND
+2 Junction_1 JUNCTION
+3 Hospital_1 HOSPITAL
+4 Building_1 BUILDING
+5 Building_2 BUILDING
+6 Charging_Station_1 CHARGING
+7 Charging_Station_2 CHARGING
+8 Supply_Depot_1 DEPOT
+9 Junction_2 JUNCTION
+
+CONNECTIONS 12
+1 1 2 3 OPEN
+2 2 3 4 OPEN
+3 2 4 6 OPEN
+4 3 5 5 OPEN
+5 4 6 2 OPEN
+6 5 7 3 OPEN
+7 6 8 4 OPEN
+8 7 9 2 OPEN
+9 8 9 5 OPEN
+10 4 5 3 OPEN
+11 1 9 8 OPEN
+12 3 9 7 BLOCKED
+
+ROBOTS 4
+1 3 MEDICAL 100 100
+2 8 SUPPLY 80 80
+3 5 SEARCH 60 12
+4 1 GENERAL 120 120
+
+REQUESTS 8
+1 0 4 MEDICAL 2 3
+2 3 9 SUPPLY 3 2
+3 6 4 SEARCH 4 4
+4 10 5 MEDICAL 1 3
+5 14 9 SUPPLY 2 4
+6 22 3 SEARCH 3 2
+7 35 5 MEDICAL 5 3
+8 50 8 SUPPLY 2 3
+
+EVENTS 8
+8 ROBOT_OFFLINE 1
+12 STATION_DOWN 6
+18 SET_URGENCY 4 5
+25 ROBOT_ONLINE 1
+30 STATION_UP 6
+40 STATION_DOWN 7
+45 BLOCK 5
+60 UNBLOCK 5
+
+END

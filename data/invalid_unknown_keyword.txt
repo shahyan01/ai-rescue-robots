@@ -1,0 +1,21 @@
+# Invalid (class: structure). Expected: 1 error, unknown section WEATHER.
+SCENARIO unknown_kw
+LOCATIONS 2
+1 A COMMAND
+2 B BUILDING
+
+CONNECTIONS 1
+1 1 2 4 OPEN
+
+ROBOTS 1
+1 1 FIRE 50 50
+
+REQUESTS 1
+1 0 2 FIRE 3 2
+
+EVENTS 0
+
+WEATHER 1
+5 RAIN
+
+END

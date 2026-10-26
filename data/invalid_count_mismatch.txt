@@ -1,0 +1,21 @@
+# Invalid on purpose: ROBOTS declares 3 records but only 2 are present
+SCENARIO bad_count
+PARAM max_steps 20
+
+LOCATIONS 2
+1 A COMMAND
+2 B BUILDING
+
+CONNECTIONS 1
+1 1 2 4 OPEN
+
+ROBOTS 3
+1 1 FIRE 50 50
+2 2 MEDICAL 50 50
+
+REQUESTS 1
+1 0 2 FIRE 3 2
+
+EVENTS 0
+
+END

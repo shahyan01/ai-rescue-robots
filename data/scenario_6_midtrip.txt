@@ -1,0 +1,47 @@
+# Scenario 6: mid-trip changes. Block ahead of a travelling robot, robot offline mid-task,
+# station down while a robot recharges, a cut-off request (stays pending), a request nobody can serve (fails).
+SCENARIO midtrip
+PARAM max_steps 45
+PARAM speed 1
+PARAM battery_per_cost_unit 1
+PARAM battery_per_work_step 2
+PARAM recharge_per_step 5
+
+LOCATIONS 7
+1 Command_Center COMMAND
+2 Junction_1 JUNCTION
+3 Building_1 BUILDING
+4 Building_2 BUILDING
+5 Charging_Station_1 CHARGING
+6 Charging_Station_2 CHARGING
+7 Building_3 BUILDING
+
+CONNECTIONS 7
+1 1 2 2 OPEN
+2 2 3 2 OPEN
+3 3 4 2 OPEN
+4 2 4 7 OPEN
+5 1 5 3 OPEN
+6 4 6 2 OPEN
+7 3 7 2 BLOCKED
+
+ROBOTS 3
+1 1 FIRE 100 100
+2 2 MEDICAL 100 100
+3 5 SEARCH 100 10
+
+REQUESTS 4
+1 0 4 FIRE 3 2
+2 2 3 MEDICAL 4 3
+3 5 7 FIRE 2 2
+4 6 3 SUPPLY 3 2
+
+EVENTS 6
+3 BLOCK 3
+3 STATION_DOWN 5
+5 ROBOT_OFFLINE 2
+7 UNBLOCK 3
+15 ROBOT_ONLINE 2
+40 STATION_UP 5
+
+END

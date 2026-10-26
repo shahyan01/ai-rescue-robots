@@ -1,0 +1,21 @@
+# Invalid (class: duplicate ids). Expected: 3 errors (location 2, robot 1, request 1).
+SCENARIO dup_ids
+LOCATIONS 3
+1 A COMMAND
+2 B BUILDING
+2 C JUNCTION
+
+CONNECTIONS 1
+1 1 2 4 OPEN
+
+ROBOTS 2
+1 1 FIRE 50 50
+1 2 MEDICAL 50 50
+
+REQUESTS 2
+1 0 2 FIRE 3 2
+1 4 2 MEDICAL 3 2
+
+EVENTS 0
+
+END

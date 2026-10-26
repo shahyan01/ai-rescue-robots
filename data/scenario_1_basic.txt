@@ -1,0 +1,48 @@
+# Scenario 1: small basic map, one blocked road, one road that closes and reopens
+SCENARIO basic_small
+PARAM max_steps 60
+PARAM speed 1
+PARAM battery_per_cost_unit 1
+PARAM battery_per_work_step 2
+PARAM recharge_per_step 5
+
+LOCATIONS 8
+1 Command_Center COMMAND
+2 Junction_1 JUNCTION
+3 Hospital_1 HOSPITAL
+4 Building_1 BUILDING
+5 Building_2 BUILDING
+6 Charging_Station_1 CHARGING
+7 Supply_Depot_1 DEPOT
+8 Junction_2 JUNCTION
+
+CONNECTIONS 10
+1 1 2 4 OPEN
+2 2 3 3 OPEN
+3 2 4 5 OPEN
+4 3 5 4 OPEN
+5 4 5 2 OPEN
+6 1 6 6 OPEN
+7 6 7 3 OPEN
+8 7 8 4 OPEN
+9 8 4 6 OPEN
+10 3 6 2 BLOCKED
+
+ROBOTS 3
+1 3 MEDICAL 100 100
+2 1 FIRE 80 80
+3 7 GENERAL 90 60
+
+REQUESTS 6
+1 0 5 MEDICAL 3 4
+2 0 4 FIRE 5 3
+3 5 8 SUPPLY 2 2
+4 10 5 SEARCH 1 3
+5 12 4 MEDICAL 4 2
+6 20 2 FIRE 2 5
+
+EVENTS 2
+15 BLOCK 3
+30 UNBLOCK 3
+
+END

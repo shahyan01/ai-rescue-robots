@@ -1,0 +1,26 @@
+# Invalid (class: out-of-range / unknown values). Expected: 6 errors.
+SCENARIO bad_values
+PARAM speed 0
+
+LOCATIONS 3
+1 A COMMAND
+2 B BUILDING
+3 C JUNCTION
+
+CONNECTIONS 2
+1 1 2 0 OPEN
+2 2 3 4 OPEN
+
+ROBOTS 2
+1 1 FIRE 50 70
+2 3 MEDICAL 50 50
+
+REQUESTS 2
+1 0 2 FIRE 9 2
+2 3 2 WATER 3 2
+
+EVENTS 2
+5 SET_URGENCY 1 7
+6 BLOCK 2
+
+END

@@ -3,22 +3,23 @@
 
 #include "Types.h"
 
-struct Robot {
+struct Robot
+{
     int id;
-    int location;       // start location id, as written in the file
+    int location; // start location
     int capability;
     int maxBattery;
     int battery;
     int state;
     bool online;
 
-    int at;             // index of the location the robot is standing on
-    int request;        // index of the request it holds, or -1
-    int roadTo;         // location index at the end of the current road, -1 when standing on a location
-    int roadRemain;     // cost units left on the current road
-    int workLeft;       // work steps left on the current request
-    int expectRemain;   // route cost expected to be left; used to spot a re-route (-1 = none)
-    bool warned;        // low-battery warning already logged
+    int at;
+    int request; // request it holds
+    int roadTo; // location index, -1 when standing on a location
+    int roadRemain; // cost units left on the road
+    int workLeft; // work left on the request
+    int expectRemain; // route cost expected to be left and     used to spot a re route (-1 = none)
+    bool warned; // low battery warning already logged
     int travelSteps;
     int workSteps;
     int onlineSteps;
@@ -27,30 +28,33 @@ struct Robot {
     int moved;
 };
 
-struct Request {
+struct Request
+{
     int id;
     int reportTime;
-    int location;       // location id, as written in the file
+    int location; // location id
     int category;
     int urgency;
     int duration;
     int state;
 
-    int assignedRobot;  // robot index or -1
-    int place;          // location index
-    int heapPos;        // position in the pending heap, -1 when not in it
-    int arriveTime;     // step a robot last arrived here, -1 if never
+    int assignedRobot; // robot index
+    int place; // location index
+    int heapPos; // position in the pending heap
+    int arriveTime; // robot last arrived
     int doneTime;
 };
 
-struct Event {
+struct Event
+{
     int time;
     int type;
     int a;
     int b;
 };
 
-struct Params {
+struct Params
+{
     int maxSteps;
     int speed;
     int batteryPerCost;
@@ -59,7 +63,8 @@ struct Params {
     int lowBatteryPercent;
 };
 
-struct Stats {
+struct Stats
+{
     int eventsApplied;
     int eventsRejected;
     int requestsReported;

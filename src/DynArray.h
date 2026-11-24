@@ -14,7 +14,7 @@ class DynArray
 
     void grow()
     {
-        int newCap;
+        int newCap = 8;
 
         if (capacity > 0)
         {

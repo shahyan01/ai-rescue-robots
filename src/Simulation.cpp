@@ -1,6 +1,7 @@
 #include "Simulation.h"
 
-Simulation::Simulation() {
+Simulation::Simulation()
+{
     scenarioName = "";
     ended = false;
     comp = 0;
@@ -29,48 +30,69 @@ Simulation::Simulation() {
     startClock = chrono::steady_clock::now();
 }
 
-Simulation::~Simulation() {
+Simulation::~Simulation()
+{
     delete[] comp;
 }
 
-bool Simulation::isFinished() const {
+bool Simulation::isFinished() const
+{
     return ended;
 }
 
-void Simulation::prepare() {
+void Simulation::prepare()
+{
     int n = env.locs.size();
 
-    // Connected components with every road treated as open. Used to decide
     // whether a request can ever be reached by a robot.
+
     comp = new int[n + 1];
-    int* stack = new int[n + 1];
-    for (int i = 0; i < n; i++)
+    int *stack = new int[n + 1];
+
+    for (int i = 0 ; i < n ; i++)
+    {
         comp[i] = -1;
+    }
+
     int label = 0;
-    for (int s = 0; s < n; s++) {
+
+    for (int s = 0 ; s < n ; s++)
+    {
         if (comp[s] != -1)
+        {
             continue;
+        }
+
         comp[s] = label;
         int top = 0;
         stack[top] = s;
         top++;
-        while (top > 0) {
+
+        while (top > 0)
+        {
             top--;
             int u = stack[top];
-            for (int e = env.locs[u].adjHead; e != -1; e = env.adj[e].next) {
+
+            for (int e = env.locs[u].adjHead ; e != -1 ; e = env.adj[e].next)
+            {
                 int v = env.adj[e].to;
-                if (comp[v] == -1) {
+
+                if (comp[v] == -1)
+                {
                     comp[v] = label;
                     stack[top] = v;
                     top++;
                 }
             }
         }
+
         label++;
     }
+
     delete[] stack;
 
-    for (int i = 0; i < robots.size(); i++) {
+    for (int i = 0 ; i < robots.size() ; i++)
+    {
         Robot& b = robots[i];
         b.at = env.locIndex(b.location);
         b.state = RS_AVAILABLE;
@@ -88,7 +110,8 @@ void Simulation::prepare() {
         b.recharged = 0;
         b.moved = 0;
     }
-    for (int i = 0; i < requests.size(); i++) {
+    for (int i = 0 ; i < requests.size() ; i++)
+    {
         Request& r = requests[i];
         r.place = env.locIndex(r.location);
         r.state = RQ_NOT_REPORTED;
@@ -97,21 +120,32 @@ void Simulation::prepare() {
         r.arriveTime = -1;
         r.doneTime = -1;
     }
+    
     pending.init(&requests);
 
     eventsDue = 0;
-    for (int i = 0; i < events.size(); i++)
+    for (int i = 0 ; i < events.size() ; i++)
+    {
         if (events[i].time < params.maxSteps)
+        {
             eventsDue++;
+        }
+    }
 
     startClock = chrono::steady_clock::now();
 }
 
-bool Simulation::openLog(string path) {
+bool Simulation::openLog(string path)
+{
     logFile.open(path.c_str());
+
     if (!logFile.is_open())
+    {
         return false;
-    logFile << "step,kind,subject,id,from,to,detail\n";
+    }
+
+    logFile << "step,kind,subject,id,from,to,detail" << endl;
+
     logLine("EVENT", "simulation", 0, "-", "RUNNING",
         "scenario=" + scenarioName +
         " max_steps=" + to_string(params.maxSteps) +
@@ -120,6 +154,7 @@ bool Simulation::openLog(string path) {
         " robots=" + to_string(robots.size()) +
         " requests=" + to_string(requests.size()) +
         " events=" + to_string(events.size()));
+        
     return true;
 }
 

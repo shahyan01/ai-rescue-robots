@@ -11,33 +11,37 @@
 #include "Environment.h"
 #include "Heap.h"
 
-// The simulation is split over four files:
-//   Simulation.cpp   state, log, events, request reports, the per-step order
+//   Simulation.cpp   state, log, events, request reports, the per step order
 //   Coordinator.cpp  assignment round and conflicts
 //   Fleet.cpp        movement, work, battery and charging of the robots
 //   Report.cpp       console views and the final statistics
-class Simulation {
-private:
+
+class Simulation
+{
+
     ofstream logFile;
     chrono::steady_clock::time_point startClock;
     bool ended;
-    int* comp;          // connected component of each location when every road is open
-    int eventsDue;      // events that can still fire (time < max_steps)
-    int doneCount;      // requests that are COMPLETED or FAILED
+    int *comp; // connected component of each location when every road is open
+    int eventsDue;
+    int doneCount;
 
     // Simulation.cpp
+    
     void processEvents();
-    void applyEvent(const Event& e);
+    void applyEvent(const Event &e);
     void reportRequests();
-    bool canEverBeServed(const Request& r) const;
+    bool canEverBeServed(const Request &r) const;
     void finishStep();
     void writeEnd();
     void releaseRequestOf(int robotIdx, string why);
 
     // Coordinator.cpp
+
     bool isIdle(int robotIdx) const;
 
     // Fleet.cpp
+
     void spend(Robot& b, int amount);
     void startRoad(Robot& b, int conn, int to);
     bool moveAlongRoad(Robot& b);
@@ -49,7 +53,8 @@ private:
     void idleStep(int i);
     void rechargeStep(int i);
 
-public:
+public :
+
     string scenarioName;
     Params params;
     Environment env;
@@ -68,7 +73,6 @@ public:
     Simulation();
     ~Simulation();
 
-    // Called by the loader once everything has been parsed and validated.
     void prepare();
 
     bool openLog(string path);
@@ -86,7 +90,7 @@ public:
     void printRobots() const;
     void printRequests() const;
     void printRoute(int fromId, int toId);
-    void printStats(ostream& out) const;
+    void printStats(ostream &out) const;
 };
 
 #endif

@@ -1,74 +1,55 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <cstring>
+#include <string>
+using namespace std;
 
-enum LocType { LT_JUNCTION, LT_BUILDING, LT_HOSPITAL, LT_DEPOT, LT_CHARGING, LT_COMMAND };
-enum Category { CAT_MEDICAL, CAT_FIRE, CAT_SUPPLY, CAT_SEARCH, CAT_GENERAL };
-enum RobotState { RS_AVAILABLE, RS_TRAVELLING, RS_PERFORMING, RS_RETURNING, RS_RECHARGING, RS_UNAVAILABLE };
-enum ReqState { RQ_NOT_REPORTED, RQ_PENDING, RQ_ASSIGNED, RQ_IN_PROGRESS, RQ_COMPLETED, RQ_FAILED };
-enum EventType { EV_BLOCK, EV_UNBLOCK, EV_STATION_DOWN, EV_STATION_UP, EV_SET_URGENCY, EV_ROBOT_OFFLINE, EV_ROBOT_ONLINE };
+// Location types
+const int LT_JUNCTION = 0;
+const int LT_BUILDING = 1;
+const int LT_HOSPITAL = 2;
+const int LT_DEPOT = 3;
+const int LT_CHARGING = 4;
+const int LT_COMMAND = 5;
 
-inline bool parseLocType(const char* s, LocType& out) {
-	if (!strcmp(s, "JUNCTION")) { out = LT_JUNCTION; return true; }
-	if (!strcmp(s, "BUILDING")) { out = LT_BUILDING; return true; }
-	if (!strcmp(s, "HOSPITAL")) { out = LT_HOSPITAL; return true; }
-	if (!strcmp(s, "DEPOT")) { out = LT_DEPOT; return true; }
-	if (!strcmp(s, "CHARGING")) { out = LT_CHARGING; return true; }
-	if (!strcmp(s, "COMMAND")) { out = LT_COMMAND; return true; }
-	return false;
-}
+// Categories
+const int CAT_MEDICAL = 0;
+const int CAT_FIRE = 1;
+const int CAT_SUPPLY = 2;
+const int CAT_SEARCH = 3;
+const int CAT_GENERAL = 4;
 
-inline bool parseCategory(const char* s, bool allowGeneral, Category& out) {
-	if (!strcmp(s, "MEDICAL")) { out = CAT_MEDICAL; return true; }
-	if (!strcmp(s, "FIRE")) { out = CAT_FIRE; return true; }
-	if (!strcmp(s, "SUPPLY")) { out = CAT_SUPPLY; return true; }
-	if (!strcmp(s, "SEARCH")) { out = CAT_SEARCH; return true; }
-	if (allowGeneral && !strcmp(s, "GENERAL")) { out = CAT_GENERAL; return true; }
-	return false;
-}
+// Robot states
+const int RS_AVAILABLE = 0;
+const int RS_TRAVELLING = 1;
+const int RS_PERFORMING = 2;
+const int RS_RETURNING = 3;
+const int RS_RECHARGING = 4;
+const int RS_UNAVAILABLE = 5;
 
-inline const char* locTypeName(LocType t) {
-	switch (t) {
-	case LT_JUNCTION: return "JUNCTION";
-	case LT_BUILDING: return "BUILDING";
-	case LT_HOSPITAL: return "HOSPITAL";
-	case LT_DEPOT: return "DEPOT";
-	case LT_CHARGING: return "CHARGING";
-	default: return "COMMAND";
-	}
-}
+// Request states
+const int RQ_NOT_REPORTED = 0;
+const int RQ_PENDING = 1;
+const int RQ_ASSIGNED = 2;
+const int RQ_IN_PROGRESS = 3;
+const int RQ_COMPLETED = 4;
+const int RQ_FAILED = 5;
 
-inline const char* categoryName(Category c) {
-	switch (c) {
-	case CAT_MEDICAL: return "MEDICAL";
-	case CAT_FIRE: return "FIRE";
-	case CAT_SUPPLY: return "SUPPLY";
-	case CAT_SEARCH: return "SEARCH";
-	default: return "GENERAL";
-	}
-}
+// Event types
+const int EV_BLOCK = 0;
+const int EV_UNBLOCK = 1;
+const int EV_STATION_DOWN = 2;
+const int EV_STATION_UP = 3;
+const int EV_SET_URGENCY = 4;
+const int EV_ROBOT_OFFLINE = 5;
+const int EV_ROBOT_ONLINE = 6;
 
-inline const char* robotStateName(RobotState s) {
-	switch (s) {
-	case RS_AVAILABLE: return "AVAILABLE";
-	case RS_TRAVELLING: return "TRAVELLING";
-	case RS_PERFORMING: return "PERFORMING";
-	case RS_RETURNING: return "RETURNING";
-	case RS_RECHARGING: return "RECHARGING";
-	default: return "UNAVAILABLE";
-	}
-}
+bool parseLocType(string s, int& out);
+bool parseCategory(string s, bool allowGeneral, int& out);
 
-inline const char* reqStateName(ReqState s) {
-	switch (s) {
-	case RQ_NOT_REPORTED: return "NOT_REPORTED";
-	case RQ_PENDING: return "PENDING";
-	case RQ_ASSIGNED: return "ASSIGNED";
-	case RQ_IN_PROGRESS: return "IN_PROGRESS";
-	case RQ_COMPLETED: return "COMPLETED";
-	default: return "FAILED";
-	}
-}
+string locTypeName(int t);
+string categoryName(int c);
+string robotStateName(int s);
+string reqStateName(int s);
 
 #endif

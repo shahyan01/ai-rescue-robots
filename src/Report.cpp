@@ -1,159 +1,196 @@
 #include "Simulation.h"
+#include <iomanip>
 
 void Simulation::printEnvironment() const {
-	int typeCount[6] = {0, 0, 0, 0, 0, 0};
-	for (int i = 0; i < env.locs.size(); i++)
-		typeCount[env.locs[i].type]++;
-	printf("Time step: %d / %d\n", now, params.maxSteps);
-	printf("Locations: %d  Connections: %d  Blocked: %d\n", env.locs.size(), env.conns.size(), env.countBlocked());
-	printf("Types: JUNCTION %d, BUILDING %d, HOSPITAL %d, DEPOT %d, CHARGING %d, COMMAND %d\n",
-		typeCount[LT_JUNCTION], typeCount[LT_BUILDING], typeCount[LT_HOSPITAL],
-		typeCount[LT_DEPOT], typeCount[LT_CHARGING], typeCount[LT_COMMAND]);
+    int typeCount[6] = {0, 0, 0, 0, 0, 0};
+    for (int i = 0; i < env.locs.size(); i++)
+        typeCount[env.locs[i].type]++;
 
-	printf("Blocked connections:");
-	int shown = 0;
-	for (int i = 0; i < env.conns.size(); i++)
-		if (env.conns[i].blocked) {
-			printf(" %d(%d-%d)", env.conns[i].id, env.conns[i].aId, env.conns[i].bId);
-			shown++;
-		}
-	if (shown == 0)
-		printf(" none");
-	printf("\n");
+    cout << "Time step: " << now << " / " << params.maxSteps << endl;
+    cout << "Locations: " << env.locs.size() << "  Connections: " << env.conns.size()
+         << "  Blocked: " << env.countBlocked() << endl;
+    cout << "Types: JUNCTION " << typeCount[LT_JUNCTION]
+         << ", BUILDING " << typeCount[LT_BUILDING]
+         << ", HOSPITAL " << typeCount[LT_HOSPITAL]
+         << ", DEPOT " << typeCount[LT_DEPOT]
+         << ", CHARGING " << typeCount[LT_CHARGING]
+         << ", COMMAND " << typeCount[LT_COMMAND] << endl;
 
-	printf("Charging stations down:");
-	shown = 0;
-	for (int i = 0; i < env.locs.size(); i++)
-		if (env.locs[i].type == LT_CHARGING && !env.locs[i].stationUp) {
-			printf(" %d", env.locs[i].id);
-			shown++;
-		}
-	if (shown == 0)
-		printf(" none");
-	printf("\n");
+    cout << "Blocked connections:";
+    int shown = 0;
+    for (int i = 0; i < env.conns.size(); i++)
+        if (env.conns[i].blocked) {
+            cout << " " << env.conns[i].id << "(" << env.conns[i].aId << "-" << env.conns[i].bId << ")";
+            shown++;
+        }
+    if (shown == 0)
+        cout << " none";
+    cout << endl;
 
-	printf("Cut-off locations (no open connection):");
-	shown = 0;
-	for (int i = 0; i < env.locs.size(); i++)
-		if (env.countOpenEdges(i) == 0) {
-			printf(" %d(%s)", env.locs[i].id, env.locs[i].name);
-			shown++;
-		}
-	if (shown == 0)
-		printf(" none");
-	printf("\n");
+    cout << "Charging stations down:";
+    shown = 0;
+    for (int i = 0; i < env.locs.size(); i++)
+        if (env.locs[i].type == LT_CHARGING && !env.locs[i].stationUp) {
+            cout << " " << env.locs[i].id;
+            shown++;
+        }
+    if (shown == 0)
+        cout << " none";
+    cout << endl;
+
+    cout << "Cut-off locations (no open connection):";
+    shown = 0;
+    for (int i = 0; i < env.locs.size(); i++)
+        if (env.countOpenEdges(i) == 0) {
+            cout << " " << env.locs[i].id << "(" << env.locs[i].name << ")";
+            shown++;
+        }
+    if (shown == 0)
+        cout << " none";
+    cout << endl;
 }
 
 void Simulation::printRobots() const {
-	printf("%-4s %-5s %-9s %-11s %-12s %-7s %s\n", "ID", "Loc", "Capab.", "Battery", "State", "Online", "Request");
-	for (int i = 0; i < robots.size(); i++) {
-		const Robot& b = robots[i];
-		printf("%-4d %-5d %-9s %3d/%-7d %-12s %-7s ", b.id, env.locs[b.at].id, categoryName(b.capability),
-			b.battery, b.maxBattery, robotStateName(b.state), b.online ? "yes" : "no");
-		if (b.request >= 0)
-			printf("%d\n", requests[b.request].id);
-		else
-			printf("-\n");
-	}
+    cout << left;
+    cout << setw(5) << "ID" << setw(6) << "Loc" << setw(10) << "Capab."
+         << setw(12) << "Battery" << setw(13) << "State" << setw(8) << "Online" << "Request" << endl;
+
+    for (int i = 0; i < robots.size(); i++) {
+        const Robot& b = robots[i];
+        string battery = to_string(b.battery) + "/" + to_string(b.maxBattery);
+        string online = "no";
+        if (b.online)
+            online = "yes";
+
+        cout << setw(5) << b.id << setw(6) << env.locs[b.at].id << setw(10) << categoryName(b.capability)
+             << setw(12) << battery << setw(13) << robotStateName(b.state) << setw(8) << online;
+        if (b.request >= 0)
+            cout << requests[b.request].id << endl;
+        else
+            cout << "-" << endl;
+    }
 }
 
 void Simulation::printRequests() const {
-	int counts[6] = {0, 0, 0, 0, 0, 0};
-	for (int i = 0; i < requests.size(); i++)
-		counts[requests[i].state]++;
-	printf("Not reported: %d  Pending: %d  Assigned: %d  In progress: %d  Completed: %d  Failed: %d\n",
-		counts[RQ_NOT_REPORTED], counts[RQ_PENDING], counts[RQ_ASSIGNED],
-		counts[RQ_IN_PROGRESS], counts[RQ_COMPLETED], counts[RQ_FAILED]);
-	printf("%-4s %-6s %-5s %-9s %-4s %-4s %-12s %s\n", "ID", "Time", "Loc", "Category", "Urg", "Dur", "State", "Robot");
-	for (int i = 0; i < requests.size(); i++) {
-		const Request& r = requests[i];
-		if (r.state == RQ_NOT_REPORTED)
-			continue;
-		printf("%-4d %-6d %-5d %-9s %-4d %-4d %-12s ", r.id, r.reportTime, r.location,
-			categoryName(r.category), r.urgency, r.duration, reqStateName(r.state));
-		if (r.assignedRobot >= 0)
-			printf("%d\n", robots[r.assignedRobot].id);
-		else
-			printf("-\n");
-	}
+    int counts[6] = {0, 0, 0, 0, 0, 0};
+    for (int i = 0; i < requests.size(); i++)
+        counts[requests[i].state]++;
+
+    cout << "Not reported: " << counts[RQ_NOT_REPORTED]
+         << "  Pending: " << counts[RQ_PENDING]
+         << "  Assigned: " << counts[RQ_ASSIGNED]
+         << "  In progress: " << counts[RQ_IN_PROGRESS]
+         << "  Completed: " << counts[RQ_COMPLETED]
+         << "  Failed: " << counts[RQ_FAILED] << endl;
+
+    cout << left;
+    cout << setw(5) << "ID" << setw(7) << "Time" << setw(6) << "Loc" << setw(10) << "Category"
+         << setw(5) << "Urg" << setw(5) << "Dur" << setw(13) << "State" << "Robot" << endl;
+
+    for (int i = 0; i < requests.size(); i++) {
+        const Request& r = requests[i];
+        if (r.state == RQ_NOT_REPORTED)
+            continue;
+        cout << setw(5) << r.id << setw(7) << r.reportTime << setw(6) << r.location
+             << setw(10) << categoryName(r.category) << setw(5) << r.urgency << setw(5) << r.duration
+             << setw(13) << reqStateName(r.state);
+        if (r.assignedRobot >= 0)
+            cout << robots[r.assignedRobot].id << endl;
+        else
+            cout << "-" << endl;
+    }
 }
 
 void Simulation::printRoute(int fromId, int toId) {
-	int n = env.locs.size();
-	int* path = new int[n + 1];
-	int len = 0;
-	int cost = 0;
-	if (env.locIndex(fromId) == -1 || env.locIndex(toId) == -1) {
-		printf("Unknown location id.\n");
-	} else if (env.shortestPath(fromId, toId, path, len, cost)) {
-		printf("Route cost %d, %d stops:", cost, len);
-		for (int i = 0; i < len; i++)
-			printf(" %d", env.locs[path[i]].id);
-		printf("\n");
-	} else {
-		printf("No route from %d to %d with the current blocked connections.\n", fromId, toId);
-	}
-	delete[] path;
+    int n = env.locs.size();
+    int* path = new int[n + 1];
+    int len = 0;
+    int cost = 0;
+
+    if (env.locIndex(fromId) == -1 || env.locIndex(toId) == -1) {
+        cout << "Unknown location id." << endl;
+    } else if (env.shortestPath(fromId, toId, path, len, cost)) {
+        cout << "Route cost " << cost << ", " << len << " stops:";
+        for (int i = 0; i < len; i++)
+            cout << " " << env.locs[path[i]].id;
+        cout << endl;
+    } else {
+        cout << "No route from " << fromId << " to " << toId << " with the current blocked connections." << endl;
+    }
+    delete[] path;
 }
 
 // Final statistics. Execution time is printed here only, never in the log,
 // so two runs of the same file give identical logs.
-void Simulation::printStats(FILE* out) const {
-	int counts[6] = {0, 0, 0, 0, 0, 0};
-	for (int i = 0; i < requests.size(); i++)
-		counts[requests[i].state]++;
-	int remaining = requests.size() - counts[RQ_COMPLETED] - counts[RQ_FAILED];
+void Simulation::printStats(ostream& out) const {
+    int counts[6] = {0, 0, 0, 0, 0, 0};
+    for (int i = 0; i < requests.size(); i++)
+        counts[requests[i].state]++;
+    int remaining = requests.size() - counts[RQ_COMPLETED] - counts[RQ_FAILED];
 
-	int served = 0;
-	long respSum = 0;
-	int respMax = 0;
-	for (int i = 0; i < requests.size(); i++) {
-		const Request& r = requests[i];
-		if (r.state != RQ_COMPLETED || r.arriveTime < 0)
-			continue;
-		int resp = r.arriveTime - r.reportTime;
-		respSum += resp;
-		if (resp > respMax)
-			respMax = resp;
-		served++;
-	}
+    int served = 0;
+    long respSum = 0;
+    int respMax = 0;
+    for (int i = 0; i < requests.size(); i++) {
+        const Request& r = requests[i];
+        if (r.state != RQ_COMPLETED || r.arriveTime < 0)
+            continue;
+        int resp = r.arriveTime - r.reportTime;
+        respSum += resp;
+        if (resp > respMax)
+            respMax = resp;
+        served++;
+    }
 
-	long moved = 0, consumed = 0, recharged = 0;
-	double utilSum = 0;
-	for (int i = 0; i < robots.size(); i++) {
-		const Robot& b = robots[i];
-		moved += b.moved;
-		consumed += b.consumed;
-		recharged += b.recharged;
-		if (b.onlineSteps > 0)
-			utilSum += (double)(b.travelSteps + b.workSteps) / b.onlineSteps;
-	}
+    long moved = 0;
+    long consumed = 0;
+    long recharged = 0;
+    double utilSum = 0;
+    for (int i = 0; i < robots.size(); i++) {
+        const Robot& b = robots[i];
+        moved += b.moved;
+        consumed += b.consumed;
+        recharged += b.recharged;
+        if (b.onlineSteps > 0)
+            utilSum += (double)(b.travelSteps + b.workSteps) / b.onlineSteps;
+    }
 
-	double secs = (double)(clock() - startClock) / CLOCKS_PER_SEC;
+    chrono::duration<double> elapsed = chrono::steady_clock::now() - startClock;
+    double secs = elapsed.count();
 
-	fprintf(out, "Scenario: %s\n", scenarioName);
-	fprintf(out, "Run ended at step %d (max_steps %d)\n", endStep, params.maxSteps);
-	fprintf(out, "Requests: %d total, %d completed, %d failed, %d remaining\n",
-		requests.size(), counts[RQ_COMPLETED], counts[RQ_FAILED], remaining);
-	if (served > 0)
-		fprintf(out, "Response time: average %.2f, maximum %d (over %d served requests)\n", (double)respSum / served, respMax, served);
-	else
-		fprintf(out, "Response time: no request was served\n");
-	if (robots.size() > 0)
-		fprintf(out, "Utilisation: fleet mean %.1f%%\n", 100.0 * utilSum / robots.size());
-	fprintf(out, "Movement cost: %ld cost units travelled by all robots\n", moved);
-	fprintf(out, "Battery: %ld consumed, %ld recharged\n", consumed, recharged);
-	fprintf(out, "Conflicts: %d, reassignments: %d, assignments: %d\n", stats.conflicts, stats.reassignments, stats.assignments);
-	fprintf(out, "Events applied: %d, rejected: %d, invalid transitions rejected: %d\n",
-		stats.eventsApplied, stats.eventsRejected, stats.badTransitions);
-	fprintf(out, "Shortest-path searches: %d\n", env.treeBuilds);
-	fprintf(out, "Execution time: %.4f s\n", secs);
+    out << fixed;
+    out << "Scenario: " << scenarioName << "\n";
+    out << "Run ended at step " << endStep << " (max_steps " << params.maxSteps << ")\n";
+    out << "Requests: " << requests.size() << " total, " << counts[RQ_COMPLETED] << " completed, "
+        << counts[RQ_FAILED] << " failed, " << remaining << " remaining\n";
 
-	fprintf(out, "Per robot (id, capability, utilisation, travel steps, work steps, moved, consumed, recharged, final battery):\n");
-	for (int i = 0; i < robots.size(); i++) {
-		const Robot& b = robots[i];
-		double u = (b.onlineSteps > 0) ? 100.0 * (b.travelSteps + b.workSteps) / b.onlineSteps : 0.0;
-		fprintf(out, "  robot %d %s %.1f%% %d %d %d %d %d %d/%d\n", b.id, categoryName(b.capability), u,
-			b.travelSteps, b.workSteps, b.moved, b.consumed, b.recharged, b.battery, b.maxBattery);
-	}
+    if (served > 0)
+        out << "Response time: average " << setprecision(2) << (double)respSum / served
+            << ", maximum " << respMax << " (over " << served << " served requests)\n";
+    else
+        out << "Response time: no request was served\n";
+
+    if (robots.size() > 0)
+        out << "Utilisation: fleet mean " << setprecision(1) << 100.0 * utilSum / robots.size() << "%\n";
+
+    out << "Movement cost: " << moved << " cost units travelled by all robots\n";
+    out << "Battery: " << consumed << " consumed, " << recharged << " recharged\n";
+    out << "Conflicts: " << stats.conflicts << ", reassignments: " << stats.reassignments
+        << ", assignments: " << stats.assignments << "\n";
+    out << "Events applied: " << stats.eventsApplied << ", rejected: " << stats.eventsRejected
+        << ", invalid transitions rejected: " << stats.badTransitions << "\n";
+    out << "Shortest-path searches: " << env.treeBuilds << "\n";
+    out << "Execution time: " << setprecision(4) << secs << " s\n";
+
+    out << "Per robot (id, capability, utilisation, travel steps, work steps, moved, consumed, recharged, final battery):\n";
+    for (int i = 0; i < robots.size(); i++) {
+        const Robot& b = robots[i];
+        double u = 0.0;
+        if (b.onlineSteps > 0)
+            u = 100.0 * (b.travelSteps + b.workSteps) / b.onlineSteps;
+        out << "  robot " << b.id << " " << categoryName(b.capability) << " "
+            << setprecision(1) << u << "% "
+            << b.travelSteps << " " << b.workSteps << " " << b.moved << " "
+            << b.consumed << " " << b.recharged << " " << b.battery << "/" << b.maxBattery << "\n";
+    }
 }

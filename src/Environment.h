@@ -3,39 +3,44 @@
 
 #include "Records.h"
 
-// A shortest-path tree. For a tree grown from location q:
-//   dist[v]   cost of the best route between v and q over open roads (NO_ROUTE if none)
-//   parent[v] the next location on that route when walking from v towards q
-//   pconn[v]  the connection used for that step
-// version tells which map version the tree was built for.
-class Tree {
-public:
+// dist[v]   cost of the best route\
+   parent[v] the next location on that route when walking from v towards q\
+   pconn[v]  the connection used for that step
+
+class Tree
+{
+	public :
+
 	int version;
 	int stationVersion;
-	int* dist;
-	int* parent;
-	int* pconn;
+	int *dist;
+	int *parent;
+	int *pconn;
 
 	Tree();
 	~Tree();
+
 	void allocate(int n);
 };
 
-class Environment {
-private:
-	Tree** cache;       // one tree per location, built when first needed
-	Tree charger;       // grown from all working charging stations at once
+class Environment
+{
+	Tree **cache;
+	Tree charger;
 
-	void growTree(Tree* t, int* sources, int howMany);
+	void growTree(Tree *t, int *sources, int howMany);
 
-public:
-	Location* locs;
+	public :
+
+	Location *locs;
 	int numLocs;
-	Connection* conns;
+
+	Connection *conns;
 	int numConns;
+
 	int mapVersion;      // goes up whenever a BLOCK or UNBLOCK changes something
 	int stationVersion;  // goes up whenever a STATION_DOWN or STATION_UP changes something
-	int treeBuilds;      // number of Dijkstra runs, for the performance report
+	int treeBuilds;      // number of Dijkstra runs
 
 	Environment();
 	~Environment();
@@ -49,9 +54,9 @@ public:
 	int countBlocked();
 	int countOpenRoads(int locIdx);
 
-	Tree* treeFor(int locIdx);
-	Tree* chargerTree();
-	bool shortestPath(int fromId, int toId, int* path, int& length, int& cost);
+	Tree *treeFor(int locIdx);
+	Tree *chargerTree();
+	bool shortestPath(int fromId, int toId, int *path, int &length, int &cost);
 };
 
 #endif

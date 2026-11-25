@@ -1,23 +1,26 @@
 #ifndef RECORDS_H
 #define RECORDS_H
 
-// Plain records. No functions in here, only data.
+// No functions, only data.
 
-struct AdjNode {
-	int to;          // location index at the other end of the road
-	int conn;        // connection index
-	AdjNode* next;
+struct AdjNode
+{
+	int to; // location index
+	int conn; // connection index
+	AdjNode *next;
 };
 
-struct Location {
+struct Location
+{
 	int id;
 	char name[32];
 	int type;
 	bool stationUp;
-	AdjNode* firstRoad;
+	AdjNode *firstRoad;
 };
 
-struct Connection {
+struct Connection
+{
 	int id;
 	int aId;
 	int bId;
@@ -27,22 +30,23 @@ struct Connection {
 	bool blocked;
 };
 
-struct Robot {
+struct Robot
+{
 	int id;
-	int location;       // start location id as written in the file
+	int location; // start location
 	int capability;
 	int maxBattery;
 	int battery;
 	int state;
 	bool online;
 
-	int at;             // index of the location the robot is standing on
-	int request;        // index of the request it holds, or -1
-	int roadTo;         // location index at the end of the current road, -1 when standing on a location
-	int roadRemain;     // cost units left on the current road
-	int workLeft;       // work steps left on the current request
-	int expectRemain;   // route cost expected to be left, used to spot a re-route (-1 = none)
-	bool warned;        // low-battery warning already written
+	int at; // location the robot is standing on
+	int request; // request it holds, or -1
+	int roadTo;
+	int roadRemain; // cost units left
+	int workLeft; // work steps left
+	int expectRemain; // route cost expected to be left
+	bool warned; // low battery warning
 	int travelSteps;
 	int workSteps;
 	int onlineSteps;
@@ -51,30 +55,33 @@ struct Robot {
 	int moved;
 };
 
-struct Request {
+struct Request
+{
 	int id;
 	int reportTime;
-	int location;       // location id as written in the file
+	int location;       // location id
 	int category;
 	int urgency;
 	int duration;
 	int state;
 
-	int assignedRobot;  // robot index or -1
+	int assignedRobot;  // robot index
 	int place;          // location index
 	int heapPos;        // position in the pending heap, -1 when not in it
 	int arriveTime;     // step a robot last arrived here, -1 if never
 	int doneTime;
 };
 
-struct Event {
+struct Event
+{
 	int time;
 	int type;
 	int a;
 	int b;
 };
 
-struct Params {
+struct Params
+{
 	int maxSteps;
 	int speed;
 	int batteryPerCost;
@@ -83,7 +90,8 @@ struct Params {
 	int lowBatteryPercent;
 };
 
-struct Stats {
+struct Stats
+{
 	int eventsApplied;
 	int eventsRejected;
 	int requestsReported;

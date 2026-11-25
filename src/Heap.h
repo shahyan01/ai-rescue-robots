@@ -3,45 +3,50 @@
 
 #include "Records.h"
 
-// Min-heap of (distance, location index) pairs, used by Dijkstra.
-// If two distances are equal, the smaller location index comes first.
-class MinHeap {
-private:
-	int* dist;
-	int* node;
+// Min heap of (distance, location index) pairs, used by Dijkstra.
+
+class MinHeap
+{
+	int *dist;
+	int *node;
 	int size;
 	int capacity;
 
 	bool before(int i, int j);
 	void swapItems(int i, int j);
 
-public:
+	public :
+
 	MinHeap(int capacity);
 	~MinHeap();
+
 	bool isEmpty();
 	void push(int d, int n);
-	void pop(int& d, int& n);
+	void pop(int &d, int &n);
 };
 
-// Max-heap of pending requests (request indices).
-// Order: higher urgency, then earlier report time, then lower id.
-// Every request remembers its position in the heap (heapPos),
-// so SET_URGENCY can fix one entry without rebuilding the heap.
-class PendingHeap {
-private:
-	int* items;
+// Max-heap of pending requests.\
+   higher urgency, then earlier report time, then lower id.\
+   Every request remembers its position in the heap (heapPos),\
+   so SET_URGENCY can fix one entry without rebuilding the heap.
+
+class PendingHeap
+{
+	int *items;
 	int size;
-	Request* requests;
+	Request *requests;
 
 	bool before(int x, int y);
 	void put(int pos, int r);
 	void moveUp(int i);
 	void moveDown(int i);
 
-public:
+	public :
+
 	PendingHeap();
 	~PendingHeap();
-	void init(Request* requestArray, int capacity);
+
+	void init(Request *requestArray, int capacity);
 	int getSize();
 	void push(int r);
 	int pop();

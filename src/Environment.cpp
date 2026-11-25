@@ -1,206 +1,219 @@
 #include "Environment.h"
+#include "Constants.h"
 #include "Heap.h"
 
+// ---------- Tree ----------
+
 Tree::Tree() {
-    version = -1;
-    stationVersion = -1;
-    dist = 0;
-    parent = 0;
-    pconn = 0;
+	version = -1;
+	stationVersion = -1;
+	dist = 0;
+	parent = 0;
+	pconn = 0;
 }
 
 Tree::~Tree() {
-    delete[] dist;
-    delete[] parent;
-    delete[] pconn;
+	delete[] dist;
+	delete[] parent;
+	delete[] pconn;
 }
 
+void Tree::allocate(int n) {
+	if (dist != 0)
+		return;
+	dist = new int[n + 1];
+	parent = new int[n + 1];
+	pconn = new int[n + 1];
+}
+
+// ---------- Environment ----------
+
 Environment::Environment() {
-    cache = 0;
-    mapVersion = 0;
-    stationVersion = 0;
-    treeBuilds = 0;
+	cache = 0;
+	locs = 0;
+	numLocs = 0;
+	conns = 0;
+	numConns = 0;
+	mapVersion = 0;
+	stationVersion = 0;
+	treeBuilds = 0;
 }
 
 Environment::~Environment() {
-    if (cache) {
-        for (int i = 0; i < locs.size(); i++)
-            delete cache[i];
-        delete[] cache;
-    }
+	for (int i = 0; i < numLocs; i++) {
+		AdjNode* node = locs[i].firstRoad;
+		while (node != 0) {
+			AdjNode* nextNode = node->next;
+			delete node;
+			node = nextNode;
+		}
+		if (cache != 0)
+			delete cache[i];
+	}
+	delete[] cache;
+	delete[] locs;
+	delete[] conns;
 }
 
-int Environment::locIndex(int id) const {
-    return locMap.find(id);
+void Environment::reserveLocations(int n) {
+	delete[] locs;
+	locs = new Location[n + 1];
+	numLocs = 0;
 }
 
-int Environment::connIndex(int id) const {
-    return connMap.find(id);
+void Environment::reserveConnections(int n) {
+	delete[] conns;
+	conns = new Connection[n + 1];
+	numConns = 0;
 }
 
-bool Environment::indexLocations(int& badId) {
-    int n = locs.size();
-    int* ids = new int[n + 1];
-    for (int i = 0; i < n; i++)
-        ids[i] = locs[i].id;
-    bool ok = locMap.build(ids, n, badId);
-    delete[] ids;
-    return ok;
+int Environment::findLocation(int id) {
+	for (int i = 0; i < numLocs; i++)
+		if (locs[i].id == id)
+			return i;
+	return -1;
 }
 
-bool Environment::indexConnections(int& badId) {
-    int n = conns.size();
-    int* ids = new int[n + 1];
-    for (int i = 0; i < n; i++)
-        ids[i] = conns[i].id;
-    bool ok = connMap.build(ids, n, badId);
-    delete[] ids;
-    return ok;
+int Environment::findConnection(int id) {
+	for (int i = 0; i < numConns; i++)
+		if (conns[i].id == id)
+			return i;
+	return -1;
 }
 
+// Every road is stored twice, once for each end (the map is undirected).
+// New nodes are added at the front of a location's linked list.
 void Environment::buildAdjacency() {
-    adj.clear();
-    for (int i = 0; i < locs.size(); i++)
-        locs[i].adjHead = -1;
+	for (int i = 0; i < numLocs; i++)
+		locs[i].firstRoad = 0;
 
-    for (int i = 0; i < conns.size(); i++) {
-        int a = locIndex(conns[i].aId);
-        int b = locIndex(conns[i].bId);
-        conns[i].aIdx = a;
-        conns[i].bIdx = b;
+	for (int i = 0; i < numConns; i++) {
+		int a = findLocation(conns[i].aId);
+		int b = findLocation(conns[i].bId);
+		conns[i].aIdx = a;
+		conns[i].bIdx = b;
 
-        AdjNode toB;
-        toB.conn = i;
-        toB.to = b;
-        toB.next = locs[a].adjHead;
-        adj.push(toB);
-        locs[a].adjHead = adj.size() - 1;
+		AdjNode* toB = new AdjNode;
+		toB->to = b;
+		toB->conn = i;
+		toB->next = locs[a].firstRoad;
+		locs[a].firstRoad = toB;
 
-        AdjNode toA;
-        toA.conn = i;
-        toA.to = a;
-        toA.next = locs[b].adjHead;
-        adj.push(toA);
-        locs[b].adjHead = adj.size() - 1;
-    }
+		AdjNode* toA = new AdjNode;
+		toA->to = a;
+		toA->conn = i;
+		toA->next = locs[b].firstRoad;
+		locs[b].firstRoad = toA;
+	}
 
-    cache = new Tree*[locs.size() + 1];
-    for (int i = 0; i < locs.size(); i++)
-        cache[i] = 0;
+	cache = new Tree*[numLocs + 1];
+	for (int i = 0; i < numLocs; i++)
+		cache[i] = 0;
 }
 
-int Environment::countBlocked() const {
-    int c = 0;
-    for (int i = 0; i < conns.size(); i++)
-        if (conns[i].blocked)
-            c++;
-    return c;
+int Environment::countBlocked() {
+	int total = 0;
+	for (int i = 0; i < numConns; i++)
+		if (conns[i].blocked)
+			total++;
+	return total;
 }
 
-int Environment::countOpenEdges(int locIdx) const {
-    int c = 0;
-    for (int e = locs[locIdx].adjHead; e != -1; e = adj[e].next)
-        if (!conns[adj[e].conn].blocked)
-            c++;
-    return c;
+int Environment::countOpenRoads(int locIdx) {
+	int total = 0;
+	for (AdjNode* r = locs[locIdx].firstRoad; r != 0; r = r->next)
+		if (!conns[r->conn].blocked)
+			total++;
+	return total;
 }
 
-void Environment::allocate(Tree& t) {
-    if (t.dist)
-        return;
-    int n = locs.size();
-    t.dist = new int[n + 1];
-    t.parent = new int[n + 1];
-    t.pconn = new int[n + 1];
+// Dijkstra with a binary heap, over OPEN roads only.
+// A distance is replaced only when strictly smaller, so the result is always the same.
+void Environment::growTree(Tree* t, int* sources, int howMany) {
+	t->allocate(numLocs);
+	for (int i = 0; i < numLocs; i++) {
+		t->dist[i] = NO_ROUTE;
+		t->parent[i] = -1;
+		t->pconn[i] = -1;
+	}
+
+	MinHeap heap(2 * numConns + numLocs + 2);
+	for (int s = 0; s < howMany; s++) {
+		t->dist[sources[s]] = 0;
+		heap.push(0, sources[s]);
+	}
+
+	while (!heap.isEmpty()) {
+		int d;
+		int u;
+		heap.pop(d, u);
+		if (d > t->dist[u])
+			continue;
+		for (AdjNode* r = locs[u].firstRoad; r != 0; r = r->next) {
+			if (conns[r->conn].blocked)
+				continue;
+			int v = r->to;
+			int newDist = d + conns[r->conn].cost;
+			if (newDist < t->dist[v]) {
+				t->dist[v] = newDist;
+				t->parent[v] = u;
+				t->pconn[v] = r->conn;
+				heap.push(newDist, v);
+			}
+		}
+	}
+	treeBuilds++;
 }
 
-// Dijkstra with a binary heap over OPEN connections only.
-// A distance is replaced only when strictly smaller, and heap ties go to the lower
-// location index, so the tree is the same on every run.
-void Environment::grow(Tree& t, const int* sources, int count) {
-    allocate(t);
-    int n = locs.size();
-    for (int i = 0; i < n; i++) {
-        t.dist[i] = INF_COST;
-        t.parent[i] = -1;
-        t.pconn[i] = -1;
-    }
-
-    MinHeap heap;
-    for (int s = 0; s < count; s++) {
-        t.dist[sources[s]] = 0;
-        heap.push(0, sources[s]);
-    }
-
-    while (!heap.empty()) {
-        HeapItem it = heap.pop();
-        int u = it.node;
-        if (it.d > t.dist[u])
-            continue;
-        for (int e = locs[u].adjHead; e != -1; e = adj[e].next) {
-            const Connection& c = conns[adj[e].conn];
-            if (c.blocked)
-                continue;
-            int v = adj[e].to;
-            int nd = it.d + c.cost;
-            if (nd < t.dist[v]) {
-                t.dist[v] = nd;
-                t.parent[v] = u;
-                t.pconn[v] = adj[e].conn;
-                heap.push(nd, v);
-            }
-        }
-    }
-    treeBuilds++;
+// Tree grown from one location. It is rebuilt only when a road has changed since it was built.
+Tree* Environment::treeFor(int locIdx) {
+	if (cache[locIdx] == 0)
+		cache[locIdx] = new Tree();
+	Tree* t = cache[locIdx];
+	if (t->version != mapVersion) {
+		growTree(t, &locIdx, 1);
+		t->version = mapVersion;
+	}
+	return t;
 }
 
-const Tree& Environment::treeFor(int locIdx) {
-    if (!cache[locIdx])
-        cache[locIdx] = new Tree();
-    Tree& t = *cache[locIdx];
-    if (t.version != mapVersion) {
-        grow(t, &locIdx, 1);
-        t.version = mapVersion;
-    }
-    return t;
+// Tree grown from every working charging station: dist is the distance to the nearest one.
+Tree* Environment::chargerTree() {
+	if (charger.version != mapVersion || charger.stationVersion != stationVersion) {
+		int* sources = new int[numLocs + 1];
+		int howMany = 0;
+		for (int i = 0; i < numLocs; i++)
+			if (locs[i].type == LT_CHARGING && locs[i].stationUp) {
+				sources[howMany] = i;
+				howMany++;
+			}
+		growTree(&charger, sources, howMany);
+		delete[] sources;
+		charger.version = mapVersion;
+		charger.stationVersion = stationVersion;
+	}
+	return &charger;
 }
 
-const Tree& Environment::chargerTree() {
-    if (charger.version != mapVersion || charger.stationVersion != stationVersion) {
-        int n = locs.size();
-        int* src = new int[n + 1];
-        int count = 0;
-        for (int i = 0; i < n; i++)
-            if (locs[i].type == LT_CHARGING && locs[i].stationUp) {
-                src[count] = i;
-                count++;
-            }
-        grow(charger, src, count);
-        delete[] src;
-        charger.version = mapVersion;
-        charger.stationVersion = stationVersion;
-    }
-    return charger;
-}
+// Fills path with location indices, starting at "from". Returns false when there is no route.
+bool Environment::shortestPath(int fromId, int toId, int* path, int& length, int& cost) {
+	length = 0;
+	cost = 0;
+	int from = findLocation(fromId);
+	int to = findLocation(toId);
+	if (from == -1 || to == -1)
+		return false;
 
-bool Environment::shortestPath(int fromId, int toId, int* path, int& len, int& cost) {
-    int from = locIndex(fromId);
-    int to = locIndex(toId);
-    len = 0;
-    cost = 0;
-    if (from == -1 || to == -1)
-        return false;
+	Tree* t = treeFor(to);
+	if (t->dist[from] >= NO_ROUTE)
+		return false;
 
-    const Tree& t = treeFor(to);
-    if (t.dist[from] >= INF_COST)
-        return false;
-
-    cost = t.dist[from];
-    int v = from;
-    while (v != -1) {
-        path[len] = v;
-        len++;
-        v = t.parent[v];
-    }
-    return true;
+	cost = t->dist[from];
+	int v = from;
+	while (v != -1) {
+		path[length] = v;
+		length++;
+		v = t->parent[v];
+	}
+	return true;
 }

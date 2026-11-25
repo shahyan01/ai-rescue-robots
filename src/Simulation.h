@@ -3,94 +3,97 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <chrono>
-#include "DynArray.h"
-#include "IdMap.h"
-#include "Entities.h"
+#include <ctime>
+#include "Constants.h"
+#include "Records.h"
 #include "Environment.h"
 #include "Heap.h"
 
-//   Simulation.cpp   state, log, events, request reports, the per step order
-//   Coordinator.cpp  assignment round and conflicts
+using namespace std;
+
+// The simulation is split over four files:
+//   Simulation.cpp   setup, log, events, request reports, order of a step
+//   Coordinator.cpp  the assignment round
 //   Fleet.cpp        movement, work, battery and charging of the robots
-//   Report.cpp       console views and the final statistics
+//   Report.cpp       the menu views and the final statistics
+class Simulation {
+private:
+	ofstream logFile;
+	clock_t startClock;
+	bool ended;
+	int* component;     // which connected part of the map each location is in (all roads open)
+	int eventsDue;      // events that can still happen (time < max_steps)
+	int doneCount;      // requests that are COMPLETED or FAILED
 
-class Simulation
-{
+	// Simulation.cpp
+	void processEvents();
+	void applyEvent(Event& e);
+	void reportRequests();
+	bool canEverBeServed(Request& r);
+	void finishStep();
+	void writeEnd();
+	void releaseRequestOf(int robotIdx, const char* why);
 
-    ofstream logFile;
-    chrono::steady_clock::time_point startClock;
-    bool ended;
-    int *comp; // connected component of each location when every road is open
-    int eventsDue;
-    int doneCount;
+	// Coordinator.cpp
+	bool isIdle(int robotIdx);
 
-    // Simulation.cpp
-    
-    void processEvents();
-    void applyEvent(const Event &e);
-    void reportRequests();
-    bool canEverBeServed(const Request &r) const;
-    void finishStep();
-    void writeEnd();
-    void releaseRequestOf(int robotIdx, string why);
+	// Fleet.cpp
+	void spend(Robot& b, int amount);
+	void startRoad(Robot& b, int conn, int to);
+	bool moveAlongRoad(Robot& b);
+	bool atWorkingStation(Robot& b);
+	void travel(int i);
+	void arrive(int i);
+	void doWork(int i);
+	void returnTrip(int i);
+	void idleStep(int i);
+	void rechargeStep(int i);
 
-    // Coordinator.cpp
+public:
+	char scenarioName[64];
+	Params params;
+	Environment env;
+	Robot* robots;
+	int numRobots;
+	Request* requests;
+	int numRequests;
+	Event* events;
+	int numEvents;
+	PendingHeap pending;
+	Stats stats;
+	int now;
+	int endStep;
+	int nextEvent;
+	int nextRequest;
 
-    bool isIdle(int robotIdx) const;
+	Simulation();
+	~Simulation();
 
-    // Fleet.cpp
+	void reserveRobots(int n);
+	void reserveRequests(int n);
+	void reserveEvents(int n);
+	int findRobot(int id);
+	int findRequest(int id);
 
-    void spend(Robot& b, int amount);
-    void startRoad(Robot& b, int conn, int to);
-    bool moveAlongRoad(Robot& b);
-    bool atWorkingStation(const Robot& b) const;
-    void travel(int i);
-    void arrive(int i);
-    void doWork(int i);
-    void returnTrip(int i);
-    void idleStep(int i);
-    void rechargeStep(int i);
+	// Called by the loader when everything has been read and checked.
+	void prepare();
 
-public :
+	bool openLog(const char* path);
+	void logStart(const char* kind, const char* subject, int id, const char* from, const char* to);
+	bool setRequestState(int q, int to, const char* detail);
+	bool setRobotState(int i, int to, const char* detail);
 
-    string scenarioName;
-    Params params;
-    Environment env;
-    DynArray<Robot> robots;
-    DynArray<Request> requests;
-    DynArray<Event> events;
-    IdMap robotMap;
-    IdMap requestMap;
-    PendingHeap pending;
-    Stats stats;
-    int now;
-    int endStep;
-    int nextEvent;
-    int nextRequest;
+	bool isFinished();
+	void step();
+	void runAll();
+	void assignRound();
+	void advanceRobots();
 
-    Simulation();
-    ~Simulation();
-
-    void prepare();
-
-    bool openLog(string path);
-    void logLine(string kind, string subject, int id, string from, string to, string detail);
-    bool setRequestState(int q, int to, string detail);
-    bool setRobotState(int i, int to, string detail);
-
-    bool isFinished() const;
-    void step();
-    void runAll();
-    void assignRound();
-    void advanceRobots();
-
-    void printEnvironment() const;
-    void printRobots() const;
-    void printRequests() const;
-    void printRoute(int fromId, int toId);
-    void printStats(ostream &out) const;
+	void printEnvironment();
+	void printRobots();
+	void printRequests();
+	void printRoute(int fromId, int toId);
+	void printStats(ostream& out);
 };
 
 #endif

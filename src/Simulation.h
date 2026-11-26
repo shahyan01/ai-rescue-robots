@@ -11,11 +11,11 @@
 
 using namespace std;
 
-// The simulation is split over four files :
-//   Simulation.cpp   setup, log, events, request reports, order of a step
-//   Coordinator.cpp  the assignment round
-//   Fleet.cpp        movement, work, battery and charging of the robots
-//   Report.cpp       the menu views and the final statistics
+// The simulation is split over four files :\
+    Simulation.cpp   setup, log, events, request reports, order of a step\
+    Coordinator.cpp  the assignment round\
+    Fleet.cpp        movement, work, battery and charging of the robots\
+    Report.cpp       the menu views and the final statistics
 
 class Simulation
 {

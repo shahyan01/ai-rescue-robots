@@ -25,6 +25,7 @@ void Simulation::printEnvironment()
 			cout << " " << env.conns[i].id << "(" << env.conns[i].aId << "-" << env.conns[i].bId << ")";
 			shown++;
 		}
+	}
 
 	if (shown == 0)
 	{

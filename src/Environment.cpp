@@ -189,7 +189,7 @@ void Environment::growTree(Tree *t, int *sources, int howMany)
 		t->pconn[i] = -1;
 	}
 
-	MinHeap heap(2 * numConns + numLocs + 2);
+	MinHeap heap(2 * numConns + numLocs + 2, locs);
 
 	for (int s = 0 ; s < howMany ; s++)
 	{

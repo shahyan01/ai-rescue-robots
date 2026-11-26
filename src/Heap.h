@@ -3,12 +3,13 @@
 
 #include "Records.h"
 
-// Min heap of (distance, location index) pairs, used by Dijkstra.
+// Min heap of (distance, location index) pairs, with equal distances ordered by location ID.
 
 class MinHeap
 {
 	int *dist;
 	int *node;
+	Location *locations;
 	int size;
 	int capacity;
 
@@ -17,7 +18,7 @@ class MinHeap
 
 	public :
 
-	MinHeap(int capacity);
+	MinHeap(int capacity, Location *locationArray);
 	~MinHeap();
 
 	bool isEmpty();

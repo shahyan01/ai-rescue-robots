@@ -2,10 +2,11 @@
 
 // MinHeap
 
-MinHeap::MinHeap(int cap)
+MinHeap::MinHeap(int cap, Location *locationArray)
 {
 	capacity = cap;
 	size = 0;
+	locations = locationArray;
 	dist = new int[capacity];
 	node = new int[capacity];
 }
@@ -28,7 +29,7 @@ bool MinHeap::before(int i, int j)
 		return dist[i] < dist[j];
 	}
 
-	return node[i] < node[j];
+	return locations[node[i]].id < locations[node[j]].id;
 }
 
 void MinHeap::swapItems(int i, int j)

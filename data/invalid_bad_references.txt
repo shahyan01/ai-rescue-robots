@@ -1,5 +1,6 @@
 # Invalid (class: dangling references). Expected: 6 errors.
 SCENARIO bad_refs
+PARAM max_steps 20
 LOCATIONS 3
 1 A COMMAND
 2 B BUILDING

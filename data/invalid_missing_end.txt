@@ -1,5 +1,6 @@
 # Invalid (class: structure). Expected: 1 error, END line missing.
 SCENARIO no_end
+PARAM max_steps 20
 LOCATIONS 2
 1 A COMMAND
 2 B BUILDING

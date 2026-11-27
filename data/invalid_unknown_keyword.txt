@@ -1,5 +1,6 @@
 # Invalid (class: structure). Expected: 1 error, unknown section WEATHER.
 SCENARIO unknown_kw
+PARAM max_steps 20
 LOCATIONS 2
 1 A COMMAND
 2 B BUILDING

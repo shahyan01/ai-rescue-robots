@@ -1,5 +1,6 @@
 # Invalid (class: out-of-range / unknown values). Expected: 6 errors.
 SCENARIO bad_values
+PARAM max_steps 20
 PARAM speed 0
 
 LOCATIONS 3

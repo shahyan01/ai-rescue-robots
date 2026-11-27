@@ -1,5 +1,6 @@
 # Invalid (class: duplicate ids). Expected: 3 errors (location 2, robot 1, request 1).
 SCENARIO dup_ids
+PARAM max_steps 20
 LOCATIONS 3
 1 A COMMAND
 2 B BUILDING
